@@ -175,26 +175,25 @@ abstract class ComercialContactController extends EditController
     {
         $this->addListView($viewName, $model, 'receipts', 'fas fa-dollar-sign');
 
-        // sort options
+        // opciones de ordenación
         $this->views[$viewName]->addOrderBy(['fecha'], 'date');
         $this->views[$viewName]->addOrderBy(['fechapago'], 'payment-date');
         $this->views[$viewName]->addOrderBy(['vencimiento'], 'expiration', 2);
         $this->views[$viewName]->addOrderBy(['importe'], 'amount');
 
-        // filters
+        // filtros
         $this->views[$viewName]->addFilterPeriod('period', 'expiration', 'vencimiento');
 
-        // search columns
+        // campos de búsqueda
         $this->views[$viewName]->addSearchFields(['codigofactura', 'observaciones']);
 
-        // add pay button
+        // botones
         $this->addButtonPayReceipt($viewName);
-
-        // disable buttons
+        $this->setSettings($viewName, 'btnPrint', true);
         $this->setSettings($viewName, 'btnNew', false);
         $this->setSettings($viewName, 'btnDelete', false);
 
-        // disable columns
+        // desactivar columnas
         $this->views[$viewName]->disableColumn('customer');
         $this->views[$viewName]->disableColumn('supplier');
     }
@@ -267,6 +266,9 @@ abstract class ComercialContactController extends EditController
 
             case 'edit-file':
                 return $this->editFileAction();
+
+            case 'generate-accounting-entries':
+                return $this->generateAccountingEntriesAction($model, $allowUpdate, $this->dataBase);
 
             case 'group-document':
                 return $this->groupDocumentAction($codes, $model);

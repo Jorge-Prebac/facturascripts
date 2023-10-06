@@ -29,11 +29,40 @@ use FacturaScripts\Core\DataSrc\Series;
 use FacturaScripts\Core\Lib\InvoiceOperation;
 use FacturaScripts\Core\Model\Base\BusinessDocument;
 use FacturaScripts\Core\Model\Base\TransformerDocument;
+use FacturaScripts\Core\Session;
 use FacturaScripts\Dinamic\Model\EstadoDocumento;
 
+/**
+ * Description of CommonSalesPurchases
+ *
+ * @author Carlos Garcia Gomez           <carlos@facturascripts.com>
+ * @author Daniel Fernández Giménez <hola@danielfg.es>
+ */
 trait CommonSalesPurchases
 {
     protected static $columnView;
+
+    protected static function checkLevel(int $level): bool
+    {
+        $user = Session::user();
+
+        // si el usuario no existe, devolvemos false
+        if (false === $user->exists()) {
+            return false;
+        }
+
+        // si el usuario es administrador, devolvemos true
+        if ($user->admin) {
+            return true;
+        }
+
+        // si el nivel es menor que el del usuario, devolvemos false
+        if ($level < $user->level) {
+            return false;
+        }
+
+        return true;
+    }
 
     protected static function cifnif(Translator $i18n, BusinessDocument $model): string
     {
@@ -148,6 +177,10 @@ trait CommonSalesPurchases
     {
         $options = [];
         foreach (Series::all() as $row) {
+            if ($row->tipo === 'R') {
+                continue;
+            }
+
             $options[] = ($row->codserie === $model->codserie) ?
                 '<option value="' . $row->codserie . '" selected>' . $row->descripcion . '</option>' :
                 '<option value="' . $row->codserie . '">' . $row->descripcion . '</option>';
@@ -164,8 +197,12 @@ trait CommonSalesPurchases
             . '</div>';
     }
 
-    protected static function column(Translator $i18n, BusinessDocument $model, string $colName, string $label, bool $autoHide = false): string
+    protected static function column(Translator $i18n, BusinessDocument $model, string $colName, string $label, bool $autoHide = false, int $level = 0): string
     {
+        if (false === self::checkLevel($level)) {
+            return '';
+        }
+
         return empty($model->{$colName}) && $autoHide ? '' : '<div class="col-sm"><div class="form-group">' . $i18n->trans($label)
             . '<input type="text" value="' . number_format($model->{$colName}, FS_NF0, FS_NF1, '')
             . '" class="form-control" disabled=""/></div></div>';
@@ -604,7 +641,7 @@ trait CommonSalesPurchases
 
     protected static function undoBtn(Translator $i18n, BusinessDocument $model): string
     {
-        return $model->subjectColumnValue() && $model->editable ? '<a href="' . $model->url() . '" class="btn btn-secondary">'
+        return $model->subjectColumnValue() && $model->editable ? '<a href="' . $model->url() . '" class="btn btn-secondary mr-2">'
             . '<i class="fas fa-undo fa-fw"></i> ' . $i18n->trans('undo')
             . '</a>' : '';
     }

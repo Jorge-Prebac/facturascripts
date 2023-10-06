@@ -57,7 +57,7 @@ class ListProveedor extends ListController
     {
         $this->addView($viewName, 'Contacto', 'addresses-and-contacts', 'fas fa-address-book');
         $this->addSearchFields($viewName, [
-            'apellidos', 'codpostal', 'descripcion', 'direccion', 'email', 'empresa',
+            'apartado', 'apellidos', 'codpostal', 'descripcion', 'direccion', 'email', 'empresa',
             'nombre', 'observaciones', 'telefono1', 'telefono2'
         ]);
         $this->addOrderBy($viewName, ['descripcion'], 'description');
@@ -65,7 +65,7 @@ class ListProveedor extends ListController
         $this->addOrderBy($viewName, ['nombre'], 'name');
         $this->addOrderBy($viewName, ['fechaalta'], 'creation-date', 2);
 
-        // filters
+        // filtros
         $values = [
             [
                 'label' => Tools::lang()->trans('suppliers'),
@@ -91,10 +91,11 @@ class ListProveedor extends ListController
         $cities = $this->codeModel->all('contactos', 'ciudad', 'ciudad');
         $this->addFilterSelect($viewName, 'ciudad', 'city', 'ciudad', $cities);
 
-        $this->addFilterCheckbox($viewName, 'verificado', 'verified', 'verificado');
-        $this->addFilterCheckbox($viewName, 'admitemarketing', 'allow-marketing', 'admitemarketing');
+        $this->addFilterAutocomplete($viewName, 'codpostal', 'zip-code', 'codpostal', 'contactos', 'codpostal');
 
-        // disable mega-search
+        $this->addFilterCheckbox($viewName, 'verificado', 'verified', 'verificado');
+
+        // desactivamos el mega-search
         $this->setSettings($viewName, 'megasearch', false);
     }
 
@@ -110,7 +111,7 @@ class ListProveedor extends ListController
             'telefono1', 'telefono2'
         ]);
 
-        // filters
+        // filtros
         $this->addFilterSelectWhere($viewName, 'status', [
             ['label' => Tools::lang()->trans('only-active'), 'where' => [new DataBaseWhere('debaja', false)]],
             ['label' => Tools::lang()->trans('only-suspended'), 'where' => [new DataBaseWhere('debaja', true)]],
