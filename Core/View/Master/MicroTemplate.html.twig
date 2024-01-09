@@ -50,11 +50,14 @@
         {% for js in assetManager.get('js') %}
             <script src="{{ js }}"></script>
         {% endfor %}
-        {{ debugBarRender.renderHead() | raw }}
+        {% if debugBarRender %}
+            {{ debugBarRender.renderHead() | raw }}
+        {% endif %}
     </head>
     {% block fullBody %}
         <body>
             {% block messages %}
+                {% include 'Macro/Toasts.html.twig' %}
                 {% from 'Macro/Utils.html.twig' import message as showMessage %}
                 {{ showMessage(log, ['error', 'critical'], 'danger') }}
                 {{ showMessage(log, ['warning'], 'warning') }}
@@ -63,7 +66,10 @@
             {% endblock %}
             {% block body %}
             {% endblock %}
-            {{ debugBarRender.render() | raw }}
+            {% if debugBarRender %}
+                {{ debugBarRender.render() | raw }}
+            {% endif %}
+            <!-- execution time: {{ executionTime() }} s -->
         </body>
     {% endblock %}
 </html>

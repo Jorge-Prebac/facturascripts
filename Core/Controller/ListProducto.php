@@ -25,6 +25,7 @@ use FacturaScripts\Core\DataSrc\Impuestos;
 use FacturaScripts\Core\Lib\ExtendedController\ListController;
 use FacturaScripts\Core\Lib\ProductType;
 use FacturaScripts\Core\Model\CodeModel;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\RegimenIVA;
 use FacturaScripts\Dinamic\Model\Atributo;
 
@@ -54,19 +55,19 @@ class ListProducto extends ListController
         $this->createViewStock();
     }
 
-    protected function createViewProducto(string $viewName = 'ListProducto')
+    protected function createViewProducto(string $viewName = 'ListProducto'): void
     {
-        $this->addView($viewName, 'Producto', 'products', 'fas fa-cubes');
-        $this->addOrderBy($viewName, ['referencia'], 'reference');
-        $this->addOrderBy($viewName, ['descripcion'], 'description');
-        $this->addOrderBy($viewName, ['fechaalta'], 'creation-date');
-        $this->addOrderBy($viewName, ['precio'], 'price');
-        $this->addOrderBy($viewName, ['stockfis'], 'stock');
-        $this->addOrderBy($viewName, ['actualizado'], 'update-time');
-        $this->addSearchFields($viewName, ['referencia', 'descripcion', 'observaciones']);
+        $this->addView($viewName, 'Producto', 'products', 'fas fa-cubes')
+            ->addOrderBy(['referencia'], 'reference')
+            ->addOrderBy(['descripcion'], 'description')
+            ->addOrderBy(['fechaalta'], 'creation-date')
+            ->addOrderBy(['precio'], 'price')
+            ->addOrderBy(['stockfis'], 'stock')
+            ->addOrderBy(['actualizado'], 'update-time')
+            ->addSearchFields(['referencia', 'descripcion', 'observaciones']);
 
         // filtros
-        $i18n = $this->toolBox()->i18n();
+        $i18n = Tools::lang();
         $this->addFilterSelectWhere($viewName, 'status', [
             ['label' => $i18n->trans('only-active'), 'where' => [new DataBaseWhere('bloqueado', false)]],
             ['label' => $i18n->trans('blocked'), 'where' => [new DataBaseWhere('bloqueado', true)]],
@@ -84,7 +85,7 @@ class ListProducto extends ListController
         foreach (ProductType::all() as $key => $value) {
             $types[] = [
                 'code' => $key,
-                'description' => $this->toolBox()->i18n()->trans($value)
+                'description' => $i18n->trans($value)
             ];
         }
         $this->addFilterSelect($viewName, 'tipo', 'type', 'tipo', $types);
@@ -99,7 +100,7 @@ class ListProducto extends ListController
         foreach (RegimenIVA::allExceptions() as $key => $value) {
             $exceptions[] = [
                 'code' => $key,
-                'description' => $this->toolBox()->i18n()->trans($value)
+                'description' => $i18n->trans($value)
             ];
         }
         $this->addFilterSelect($viewName, 'excepcioniva', 'vat-exception', 'excepcioniva', $exceptions);
@@ -114,16 +115,16 @@ class ListProducto extends ListController
         $this->addFilterCheckbox($viewName, 'publico', 'public', 'publico');
     }
 
-    protected function createViewVariante(string $viewName = 'ListVariante')
+    protected function createViewVariante(string $viewName = 'ListVariante'): void
     {
-        $this->addView($viewName, 'Join\VarianteProducto', 'variants', 'fas fa-project-diagram');
-        $this->addOrderBy($viewName, ['variantes.referencia'], 'reference');
-        $this->addOrderBy($viewName, ['variantes.codbarras'], 'barcode');
-        $this->addOrderBy($viewName, ['variantes.precio'], 'price');
-        $this->addOrderBy($viewName, ['variantes.coste'], 'cost-price');
-        $this->addOrderBy($viewName, ['variantes.stockfis'], 'stock');
-        $this->addOrderBy($viewName, ['productos.descripcion', 'variantes.referencia'], 'product');
-        $this->addSearchFields($viewName, ['variantes.referencia', 'variantes.codbarras', 'productos.descripcion']);
+        $this->addView($viewName, 'Join\VarianteProducto', 'variants', 'fas fa-project-diagram')
+            ->addOrderBy(['variantes.referencia'], 'reference')
+            ->addOrderBy(['variantes.codbarras'], 'barcode')
+            ->addOrderBy(['variantes.precio'], 'price')
+            ->addOrderBy(['variantes.coste'], 'cost-price')
+            ->addOrderBy(['variantes.stockfis'], 'stock')
+            ->addOrderBy(['productos.descripcion', 'variantes.referencia'], 'product')
+            ->addSearchFields(['variantes.referencia', 'variantes.codbarras', 'productos.descripcion']);
 
         // filtros
         $manufacturers = $this->codeModel->all('fabricantes', 'codfabricante', 'nombre');
@@ -154,32 +155,42 @@ class ListProducto extends ListController
         $this->setSettings($viewName, 'btnNew', false);
     }
 
-    protected function createViewStock(string $viewName = 'ListStock')
+    protected function createViewStock(string $viewName = 'ListStock'): void
     {
-        $this->addView($viewName, 'Join\StockProducto', 'stock', 'fas fa-dolly');
-        $this->addOrderBy($viewName, ['stocks.referencia'], 'reference');
-        $this->addOrderBy($viewName, ['stocks.cantidad'], 'quantity');
-        $this->addOrderBy($viewName, ['stocks.disponible'], 'available');
-        $this->addOrderBy($viewName, ['stocks.reservada'], 'reserved');
-        $this->addOrderBy($viewName, ['stocks.pterecibir'], 'pending-reception');
-        $this->addOrderBy($viewName, ['productos.descripcion', 'stocks.referencia'], 'product');
-        $this->addSearchFields($viewName, ['stocks.referencia', 'productos.descripcion']);
+        $this->addView($viewName, 'Join\StockProducto', 'stock', 'fas fa-dolly')
+            ->addOrderBy(['stocks.referencia'], 'reference')
+            ->addOrderBy(['stocks.cantidad'], 'quantity')
+            ->addOrderBy(['stocks.disponible'], 'available')
+            ->addOrderBy(['stocks.reservada'], 'reserved')
+            ->addOrderBy(['stocks.pterecibir'], 'pending-reception')
+            ->addOrderBy(['productos.descripcion', 'stocks.referencia'], 'product')
+            ->addSearchFields(['stocks.referencia', 'productos.descripcion']);
 
         // filtros
         $warehouses = Almacenes::codeModel();
         $this->addFilterSelect($viewName, 'codalmacen', 'warehouse', 'stocks.codalmacen', $warehouses);
 
+        $manufacturers = $this->codeModel->all('fabricantes', 'codfabricante', 'nombre');
+        $this->addFilterSelect($viewName, 'codfabricante', 'manufacturer', 'productos.codfabricante', $manufacturers);
+
+        $families = $this->codeModel->all('familias', 'codfamilia', 'descripcion');
+        $this->addFilterSelect($viewName, 'codfamilia', 'family', 'productos.codfamilia', $families);
+
         $this->addFilterSelectWhere($viewName, 'type', [
             [
-                'label' => $this->toolBox()->i18n()->trans('all'),
+                'label' => Tools::lang()->trans('all'),
                 'where' => []
             ],
             [
-                'label' => $this->toolBox()->i18n()->trans('under-minimums'),
+                'label' => '------',
+                'where' => []
+            ],
+            [
+                'label' => Tools::lang()->trans('under-minimums'),
                 'where' => [new DataBaseWhere('stocks.disponible', 'field:stockmin', '<')]
             ],
             [
-                'label' => $this->toolBox()->i18n()->trans('excess'),
+                'label' => Tools::lang()->trans('excess'),
                 'where' => [new DataBaseWhere('stocks.disponible', 'field:stockmax', '>')]
             ]
         ]);

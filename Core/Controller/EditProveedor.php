@@ -22,6 +22,7 @@ namespace FacturaScripts\Core\Controller;
 use FacturaScripts\Core\Base\DataBase\DataBaseWhere;
 use FacturaScripts\Core\Lib\ExtendedController\BaseView;
 use FacturaScripts\Core\Lib\ExtendedController\ComercialContactController;
+use FacturaScripts\Core\Tools;
 use FacturaScripts\Dinamic\Lib\RegimenIVA;
 use FacturaScripts\Dinamic\Lib\SupplierRiskTools;
 
@@ -44,7 +45,7 @@ class EditProveedor extends ComercialContactController
     {
         $code = $this->getViewModelValue('EditProveedor', 'codproveedor');
         $total = SupplierRiskTools::getDeliveryNotesRisk($code);
-        return $this->toolBox()->coins()->format($total);
+        return Tools::money($total);
     }
 
     public function getImageUrl(): string
@@ -62,7 +63,7 @@ class EditProveedor extends ComercialContactController
     {
         $code = $this->getViewModelValue('EditProveedor', 'codproveedor');
         $total = SupplierRiskTools::getInvoicesRisk($code);
-        return $this->toolBox()->coins()->format($total);
+        return Tools::money($total);
     }
 
     public function getModelClassName(): string
@@ -107,11 +108,12 @@ class EditProveedor extends ComercialContactController
         $this->views[$viewName]->addOrderBy(['neto'], 'net');
         $this->views[$viewName]->addSearchFields(['referencia', 'refproveedor']);
 
-        // disable columns
+        // desactivamos la columna de proveedor
         $this->views[$viewName]->disableColumn('supplier');
 
-        // disable buttons
+        // botones
         $this->setSettings($viewName, 'btnNew', false);
+        $this->setSettings($viewName, 'btnPrint', true);
     }
 
     /**
@@ -244,7 +246,7 @@ class EditProveedor extends ComercialContactController
         $columnLangCode = $this->views[$viewName]->columnForName('language');
         if ($columnLangCode && $columnLangCode->widget->getType() === 'select') {
             $langs = [];
-            foreach ($this->toolBox()->i18n()->getAvailableLanguages() as $key => $value) {
+            foreach (Tools::lang()->getAvailableLanguages() as $key => $value) {
                 $langs[] = ['value' => $key, 'title' => $value];
             }
 
